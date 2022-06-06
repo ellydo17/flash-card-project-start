@@ -8,12 +8,18 @@ BACKGROUND_COLOR = "#B1DDC6"
 BACKGROUND_COLOR_2 ="#91C2AF"
 WHITE = "#FFFFFF"
 BLACK = "#000000"
+current_word = {}
 
 # ---------------------------- CREATE NEW FLASH CARDS ------------------------------- #
-words_data = pandas.read_csv("./data/french_words.csv")
-words_data_dict = words_data.to_dict(orient="records")
-# print(words_data_dict)
-current_word = {}
+try:
+    words_data = pandas.read_csv("./data/word_to_learn.csv")
+except FileNotFoundError:
+    words_data = pandas.read_csv("./data/french_words.csv")
+else:
+    pass
+finally:
+    words_data_dict = words_data.to_dict(orient="records")
+
 
 def random_word():
     global current_word, flip_duration
@@ -29,6 +35,13 @@ def flip_card():
     canvas.itemconfig(card_back_img_created, image=card_back_img)
     language_label.config(text="English", fg="white", bg=BACKGROUND_COLOR_2)
     word_label.config(text=current_word["English"], fg="white", bg=BACKGROUND_COLOR_2)
+
+# ---------------------------- SAVE THE PROGRESS ------------------------------- #
+def save_known_word():
+    words_data_dict.remove(current_word)
+    data = pandas.DataFrame(words_data_dict)
+    data.to_csv("./data/word_to_learn.csv", index=False)
+    random_word()
 
 
 # ---------------------------- UI SETUP ------------------------------- #
@@ -51,7 +64,7 @@ wrong_button = Button(image=wrong_image, highlightthickness=0, command=random_wo
 wrong_button.grid(column=0, row=1)
 
 right_image = PhotoImage(file="./images/right.png")
-right_button = Button(image=right_image, highlightthickness=0, command=random_word)
+right_button = Button(image=right_image, highlightthickness=0, command=save_known_word)
 right_button.grid(column=1, row=1)
 
 #Texts
